@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatServer", "ChatServer\Ch
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatWebClient", "ChatWebClient\ChatWebClient.csproj", "{FF12EDFA-55FC-4AD1-AB9B-2AE2AD8F0C43}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatConsoleClient", "ChatConsoleClient\ChatConsoleClient.csproj", "{D808587A-A2F5-4FC2-A743-1C2F80BE766C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{FF12EDFA-55FC-4AD1-AB9B-2AE2AD8F0C43}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FF12EDFA-55FC-4AD1-AB9B-2AE2AD8F0C43}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FF12EDFA-55FC-4AD1-AB9B-2AE2AD8F0C43}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D808587A-A2F5-4FC2-A743-1C2F80BE766C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D808587A-A2F5-4FC2-A743-1C2F80BE766C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D808587A-A2F5-4FC2-A743-1C2F80BE766C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D808587A-A2F5-4FC2-A743-1C2F80BE766C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

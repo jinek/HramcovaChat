@@ -1,0 +1,8 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <Nullable>enable</Nullable>
+        <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
+        <RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
+        <NoWarn>CA2219<!--для примера finally{throw new NotImplementedException()}-->,CA1065<!--Это просто бессмысленный набор букв--></NoWarn>
+    </PropertyGroup>
+</Project>

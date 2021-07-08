@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using ChatContract;
 using ChatHelpers;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ChatWebClient
 {
@@ -62,6 +64,17 @@ namespace ChatWebClient
                 _messages.Insert(0,$"Received: {text}");
                 StateHasChanged();
             }).FastFailOnException();
+        }
+
+        internal static readonly ThreadStaticParameter<App> AppToSet = new();
+
+        protected override async Task OnInitializedAsync()
+        {
+            using IDisposable _ = AppToSet.StartParameterRegion(this);
+            _serviceProvider.GetRequiredService<ChatClientCoreBackgroundService>()
+                .StartAsync(CancellationToken.None).FastFailOnException();
+            //todo: если не залогинились вовремя (видимо пофиг)
+            await base.OnInitializedAsync();
         }
     }
 }

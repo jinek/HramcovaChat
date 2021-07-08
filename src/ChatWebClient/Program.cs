@@ -20,22 +20,17 @@ namespace ChatWebClient
     {
         public static async Task Main(string[] args)
         {
-            Debug.WriteLine("Hello 1");
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             using var clientWebSocket = new ClientWebSocket();
-            await clientWebSocket.ConnectAsync(new Uri(@"ws://localhost:5000"), CancellationToken.None);
-            builder.RootComponents.Add<App>("#app");//todo: exception handling
+            using var connectionCts = new CancellationTokenSource(ChatProtocol.SendReceiveTimeout);
+            await clientWebSocket.ConnectAsync(new Uri(@"ws://localhost:5000"), connectionCts.Token);
+            
+            builder.RootComponents.Add<App>("#app"); //todo: exception handling
             builder.Services
-                .AddSingleton<IUiInputOutput>(_ => App.AppToSet.CurrentValue )
-                .AddSingleton<IConnection>(_ =>
-                {
-                    Console.WriteLine("Requisting websocketConnection");
-                    var webSocketConnection = new WebSocketConnection(clientWebSocket);
-                    Console.WriteLine($"returning websocket: {clientWebSocket.State}");
-                    return webSocketConnection;
-                })
+                .AddSingleton<IUiInputOutput>(_ => App.AppToSet.CurrentValue ?? throw new NotImplementedException())
+                .AddSingleton<IConnection>(_ => new WebSocketConnection(clientWebSocket))
                 .AddSingleton<ChatClientCoreBackgroundService>();
-                
+
             await builder.Build().RunAsync();
         }
     }

@@ -1,17 +1,11 @@
 @using System.Collections.ObjectModel
-@using System.Diagnostics
-@using System.Net.WebSockets
-@using System.Threading
-@using ChatContract
-@using ChatHelpers
-@using Microsoft.Extensions.DependencyInjection
 @inject IServiceProvider _serviceProvider
 
 <h1>Chat web client</h1>
 
 <div class="auth">
     <input @bind="@inputValue" class="input-group"/>
-    <button class="btn btn-primary" @onclick="TextEntered" disabled="@Sending">Enter</button>
+    <button class="btn btn-primary" @onclick="TextEntered" disabled="@Sending" >Enter</button>
 </div>
 
 @foreach (var message in _messages)
@@ -20,34 +14,17 @@
 }
 
 @code {
-    internal static ThreadStaticParameter<App> AppToSet = new();
-    protected override async Task OnInitializedAsync()
-    {Console.WriteLine("This is app");
-        using IDisposable _ = AppToSet.StartParameterRegion(this);
-        _serviceProvider.GetRequiredService<ChatClientCoreBackgroundService>()
-            .StartAsync(CancellationToken.None).FastFailOnException();
-    //todo: если не залогинились вовремя (видимо пофиг)
-        /*Debug.WriteLine("hello 2");
-        using var clientWebSocket = new ClientWebSocket();
-        await clientWebSocket.ConnectAsync(new Uri(@"ws://localhost:5000"), CancellationToken.None);
-        var webSocketConnection = new WebSocketConnection(clientWebSocket);
-        await webSocketConnection.SendMessageAsync(new LoginMessage("asdf"));
-        */
-        
-        await base.OnInitializedAsync();
-    }
-
-    public string? inputValue;
-
-    public void TextEntered()
-    {
-        Console.WriteLine($"Sending to console {inputValue}");
-        TaskCompletionSource.SetResult(inputValue);
-        //_messages.Insert(0,inputValue);
-        inputValue = string.Empty;
-        //_messages.Insert(0,(_serviceProvider.GetRequiredService<App>().GetHashCode()==this.GetHashCode()).ToString());
-        
-    }
-
+//todo: сделать блок ошибки, а это всё показывать условно
+    //todo: делать enter по enter, фокус по дефолту в окно
+    private string? inputValue;
     private readonly ObservableCollection<string> _messages = new();
+
+
+    private void TextEntered()
+    {
+        TaskCompletionSource.SetResult(inputValue);
+        inputValue = string.Empty;
+    }
+
+    //todo: https://docs.microsoft.com/en-us/visualstudio/containers/container-launch-settings?view=vs-2019
 }

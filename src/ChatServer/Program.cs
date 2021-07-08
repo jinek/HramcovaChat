@@ -21,7 +21,7 @@ namespace ChatServer
             //todo: check exceptions
             new HostBuilder()
                 .UseConsoleLifetime()
-                .ConfigureLogging(builder => builder.AddDebug().SetMinimumLevel(LogLevel.Trace))
+                .ConfigureLogging(builder => builder.AddDebug().SetMinimumLevel(LogLevel.Trace))//todo: move to helpers
                 .ConfigureServices(collection => collection
                     .AddSingleton<ChatServerCore>()
                     .AddScoped<IConnection>(_ =>

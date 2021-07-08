@@ -14,7 +14,7 @@ namespace ChatServer
         private readonly RequestDelegate _next;
 
         public WebSocketChatMiddleware(RequestDelegate next)
-        {
+        {/*"applicationUrl": "http://localhost:5005", todo: это убрать*/
             _next = next;
         }
 

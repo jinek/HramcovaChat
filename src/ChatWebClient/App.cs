@@ -12,19 +12,10 @@ namespace ChatWebClient
     // ReSharper disable once ClassNeverInstantiated.Global
     public partial class App : IUiInputOutput
     {
-        public App()
-        {
-            AppDomain.CurrentDomain.UnhandledException += (_, args) =>
-            {
-                var argsExceptionObject = (Exception)args.ExceptionObject;
-                Debug.WriteLine(argsExceptionObject.ToString());
-            };
-        }
-
         private readonly AsyncLock _inputLock = new();
-        private TaskCompletionSource<string> _taskCompletionSource;
+        private TaskCompletionSource<string>? _taskCompletionSource;
 
-        private TaskCompletionSource<string> TaskCompletionSource
+        private TaskCompletionSource<string>? TaskCompletionSource
         {
             get => _taskCompletionSource;
             set
@@ -61,7 +52,7 @@ namespace ChatWebClient
         {
             InvokeAsync(() =>
             {
-                _messages.Insert(0,$"Received: {text}");
+                _messages.Insert(0,$"{text}");
                 StateHasChanged();
             }).FastFailOnException();
         }

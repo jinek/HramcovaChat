@@ -1,28 +1,47 @@
 @using System.Collections.ObjectModel
 @inject IServiceProvider _serviceProvider
 
-<h1>Chat web client</h1>
-
-<div class="auth">
-    <input @bind="@inputValue" class="input-group"/>
-    <button class="btn btn-primary" @onclick="TextEntered" disabled="@Sending" >Enter</button>
+<div class="container" style="margin-bottom: 1em">
+    <h1>Chat web client</h1>
+</div>
+<div class="container" style="margin-bottom: 1em">
+    <form @onsubmit="TextEntered">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <label class="col-form-label" for="userInput">Enter login or message here:</label>
+            </div>
+            <div class="col-auto">
+                <input type="text" @bind="@inputValue" class="form-control" disabled="@Sending" id="userInput" autocomplete="off"/>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary" disabled="@Sending">Submit</button>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="container" style="margin-bottom: 1em">
+    <ul class="list-unstyled">
+        @foreach (var message in _messages)
+        {
+            <li>
+                <blockquote class="blockquote">@message</blockquote>
+            </li>
+        }
+    </ul>
 </div>
 
-@foreach (var message in _messages)
-{
-    <p>@message</p>
-}
 
 @code {
-//todo: сделать блок ошибки, а это всё показывать условно
+    //todo: сделать блок ошибки, а это всё показывать условно
     //todo: делать enter по enter, фокус по дефолту в окно
-    private string? inputValue;
+    private string inputValue = string.Empty;
     private readonly ObservableCollection<string> _messages = new();
 
 
-    private void TextEntered()
+    public void TextEntered()
     {
-        TaskCompletionSource.SetResult(inputValue);
+        if (Sending) return;
+        TaskCompletionSource! /*Must not be called if null*/.SetResult(inputValue);
         inputValue = string.Empty;
     }
 

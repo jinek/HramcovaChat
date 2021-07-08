@@ -25,7 +25,7 @@ namespace ChatContract
             uiInputOutput.Output("Please, enter your name");
             string userName = await uiInputOutput.InputAsync();
             await connection.SendMessageAsync(new LoginMessage(userName));
-            
+
             Task.Run(async () =>
             {
                 //Ping
@@ -57,7 +57,7 @@ namespace ChatContract
                             await connection.ReceiveMessageAsync<ChatProtocolMessage>(ChatProtocol.PingTimeout);
                         if (!message.HasMessage)
                             throw new NotImplementedException();
-                        uiInputOutput.Output($"New message from {message.Login}: {message.Message}");
+                        uiInputOutput.Output($"{message.Login ?? "<Admin>"}: {message.Message}");
                     }
                     catch (OperationCanceledException)
                     {

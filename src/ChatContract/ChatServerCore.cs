@@ -46,8 +46,10 @@ namespace ChatContract
                 {
                     await _messages.ForeachAsync(async message => await connection.SendMessageAsync(message));
                 }
-
-                await BroadcastMessage(new ChatProtocolMessage($"Welcome to the chat, {login}"));
+                using(var _ = ChatProtocolMessage.UserNameToSet.StartParameterRegion("Admin"))
+                {
+                    await BroadcastMessage(new ChatProtocolMessage($"Welcome to the chat, {login}"));
+                }
 
                 while (true)
                 {

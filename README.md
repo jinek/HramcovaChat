@@ -1,5 +1,7 @@
 ﻿# Описание решения
 
+![alt text](https://github.com/jinek/HramcovaChat/blob/main/FancyPng.png?raw=true)
+
 ## Бриф
 
 Для запуска можно использовать docker-compose up --build из директории src:

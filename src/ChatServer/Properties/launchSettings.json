@@ -4,8 +4,7 @@
     "ChatServer": {
       "commandName": "Project",
       "dotnetRunMessages": "true",
-      "launchBrowser": false,
-      "applicationUrl": "http://localhost:5000",
+      "launchBrowser": false,      
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

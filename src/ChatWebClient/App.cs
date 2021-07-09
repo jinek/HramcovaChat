@@ -27,24 +27,24 @@ namespace ChatWebClient
 
         private bool Sending;
 
-        public async Task<string> InputAsync()
+        public async Task<string> InputAsync(CancellationToken cancellationToken)
         {
-            Console.WriteLine("App: requisting input");
-            using IDisposable _ = await _inputLock.LockAsync();
-            Console.WriteLine("App: Lock passed");
+            using IDisposable _ = await _inputLock.LockAsync(cancellationToken);
 
             try
             {
                 TaskCompletionSource = new TaskCompletionSource<string>();
+                await using CancellationTokenRegistration cancellationTokenRegistration = cancellationToken.Register(
+                    () =>
+                    {
+                        Output("You can close the window.");
+                        TaskCompletionSource.TrySetCanceled();
+                    });
                 return await TaskCompletionSource.Task;
             }
             finally
             {
-                Console.WriteLine("App: finally called");
-
                 TaskCompletionSource = null;
-                Console.WriteLine("App: set to null");
-
             }
         }
 
@@ -52,20 +52,32 @@ namespace ChatWebClient
         {
             InvokeAsync(() =>
             {
-                _messages.Insert(0,$"{text}");
+                _messages.Insert(0, $"{text}");
                 StateHasChanged();
             }).FastFailOnException();
         }
 
         internal static readonly ThreadStaticParameter<App> AppToSet = new();
+        public static string HostName;
 
         protected override async Task OnInitializedAsync()
         {
             using IDisposable _ = AppToSet.StartParameterRegion(this);
-            _serviceProvider.GetRequiredService<ChatClientCoreBackgroundService>()
-                .StartAsync(CancellationToken.None).FastFailOnException();
+            RunChatWorkflow().FastFailOnException();
             //todo: если не залогинились вовремя (видимо пофиг)
             await base.OnInitializedAsync();
+
+            async Task RunChatWorkflow()
+            {
+                await _serviceProvider.GetRequiredService<ChatClientCoreBackgroundService>()
+                    .ExecuteInternalAsync(CancellationToken.None);
+
+                await InvokeAsync(() =>
+                {
+                    Sending = true;
+                    StateHasChanged();
+                });
+            }
         }
     }
 }

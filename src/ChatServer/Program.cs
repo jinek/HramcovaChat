@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Net.WebSockets;
 using ChatContract;
+using ChatHelpers;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -11,18 +12,22 @@ using Microsoft.AspNetCore.WebSockets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 
 namespace ChatServer
 {
-    internal class Program
+    internal static class Program
     {
         public static void Main()
         {
             //todo: check exceptions
             new HostBuilder()
                 .UseConsoleLifetime()
-                .ConfigureLogging(builder => builder.AddDebug().SetMinimumLevel(LogLevel.Trace))//todo: move to helpers
+                .ConfigureLogging(builder => builder
+                    .AddDebug()
+                    .SetMinimumLevel(LogLevel.Trace))
                 .ConfigureServices(collection => collection
+                    .AddSingleton<IUiInputOutput,ConsoleInputOutput>()
                     .AddSingleton<ChatServerCore>()
                     .AddScoped<IConnection>(_ =>
                     {
@@ -36,7 +41,7 @@ namespace ChatServer
                             return new WebSocketConnection(currentWebSocket!);
                         }
 
-                        if(currentTcpClient!=null)
+                        if (currentTcpClient != null)
                             return new TcpSocketConnection(currentTcpClient);
 
                         throw new NotImplementedException();
@@ -44,7 +49,7 @@ namespace ChatServer
                     .AddHostedService<TcpListenerHostedService>())
                 .ConfigureWebHost(builder => builder
                     .CaptureStartupErrors(false)
-                    .UseKestrel()
+                    .UseKestrel(options => options.ListenAnyIP(ChatProtocol.HttpPortNumber))
                     .Configure(app => app
                         .UseWebSockets()
                         .UseMiddleware<WebSocketChatMiddleware>()))

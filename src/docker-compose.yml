@@ -1,0 +1,28 @@
+version: '3.4'
+services:
+  chatserver:
+    build:
+      context: .
+      dockerfile: ./ChatServer/Dockerfile
+    ports:
+      - "24523:24523"
+      - "24524:24524"
+    stdin_open: true
+    # tty: true
+  chatwebclient:
+    build:
+      context: .
+      dockerfile: ./ChatWebClient/Dockerfile
+    ports:
+      - "24525:80"
+    depends_on:
+      - chatserver
+      - chatconsoledep
+  chatconsoledep:
+    build:
+      context: .
+      dockerfile: ./ChatConsoleClient/Dockerfile
+    ports:
+      - "24526:80"
+    depends_on:
+      - chatserver

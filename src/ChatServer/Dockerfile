@@ -1,7 +1,5 @@
 ﻿FROM mcr.microsoft.com/dotnet/aspnet:5.0 AS base
 WORKDIR /app
-EXPOSE 80
-EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
 WORKDIR /src
@@ -15,6 +13,10 @@ FROM build AS publish
 RUN dotnet publish "ChatServer.csproj" -c Release -o /app/publish
 
 FROM base AS final
+# These ports are set in ChatProtocol
+EXPOSE 24523
+EXPOSE 24524
+
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "ChatServer.dll"]

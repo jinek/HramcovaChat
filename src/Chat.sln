@@ -9,8 +9,13 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatContract", "ChatContract\ChatContract.csproj", "{7A16381C-40BF-46BE-A32F-FD107CBF87E1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "InfraComposition", "InfraComposition", "{73563CA2-AC7C-4488-BCFE-696A09D86302}"
+ProjectSection(SolutionItems) = preProject
+	docker-compose.yml = docker-compose.yml
+EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatHelpers", "ChatHelpers\ChatHelpers.csproj", "{5BBFA109-A6D0-410D-8533-5A384B3EE009}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatAllTests", "ChatAllTests\ChatAllTests.csproj", "{766D004D-1B8C-4963-B3DA-79F718397416}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -38,5 +43,9 @@ Global
 		{5BBFA109-A6D0-410D-8533-5A384B3EE009}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5BBFA109-A6D0-410D-8533-5A384B3EE009}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5BBFA109-A6D0-410D-8533-5A384B3EE009}.Release|Any CPU.Build.0 = Release|Any CPU
+		{766D004D-1B8C-4963-B3DA-79F718397416}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{766D004D-1B8C-4963-B3DA-79F718397416}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{766D004D-1B8C-4963-B3DA-79F718397416}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{766D004D-1B8C-4963-B3DA-79F718397416}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

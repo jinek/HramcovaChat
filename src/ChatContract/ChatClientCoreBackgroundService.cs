@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using ChatHelpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using TaskExtensions = ChatHelpers.TaskExtensions;
 
 namespace ChatContract
 {
@@ -16,54 +17,69 @@ namespace ChatContract
             _serviceProvider = serviceProvider;
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+//todo: делать await завершения таска, потому что там могут быть ошибки
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            //this is called only from console.
+            Task executeInternalAsync = ExecuteInternalAsync(stoppingToken, true);
+            executeInternalAsync.FastFailOnException();
+            return executeInternalAsync;
+        }
+
+        public async Task ExecuteInternalAsync(CancellationToken stoppingToken, bool retrieve30Messages=false)
+        {
+            var localCts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+            stoppingToken = localCts.Token;
+            
             using IServiceScope scope = _serviceProvider.CreateScope()!;
             IConnection connection = scope.ServiceProvider.GetRequiredService<IConnection>();
             IUiInputOutput uiInputOutput = scope.ServiceProvider.GetRequiredService<IUiInputOutput>();
 
             uiInputOutput.Output("Please, enter your name");
-            string userName = await uiInputOutput.InputAsync();
-            await connection.SendMessageAsync(new LoginMessage(userName));
-
-            Task.Run(async () =>
+            string userName = await uiInputOutput.InputAsync(stoppingToken);
+            try
             {
-                //Ping
-                while (true)
-                {
-                    //todo: закрываться, если потеряна связь при отправке
-                    await Task.Delay(ChatProtocol.PingTimeout);
-                    await connection.SendMessageAsync(new ChatProtocolMessage()); //todo: PingMessage static
-                }
-            }).FastFailOnException();
+                await connection.SendMessageAsync(new LoginMessage(userName, retrieve30Messages),stoppingToken);
 
-            Task.Run(async () =>
-            {
-                while (true)
-                {
-                    string newMessage = await uiInputOutput.InputAsync();
-                    await connection.SendMessageAsync(new ChatProtocolMessage(newMessage));
-                }
-            }).FastFailOnException();
-
-            await Task.Run(async () =>
-            {
-                while (true)
-                {
-                    //todo: закрываться, если потеряна связь при отправке
-                    try
+                await TaskExtensions.WhenAny_Normal(
+                    RepeatUntilCancelled(async () =>
+                    {
+                        //ping
+                        //todo: закрываться, если потеряна связь при отправке
+                        await Task.Delay(ChatProtocol.PingTimeout, stoppingToken);
+                        await connection.SendMessageAsync(new ChatProtocolMessage(), stoppingToken); //todo: PingMessage static
+                    }),
+                    RepeatUntilCancelled(async () =>
+                    {
+                        string newMessage = await uiInputOutput.InputAsync(stoppingToken);
+                        await connection.SendMessageAsync(new ChatProtocolMessage(newMessage), stoppingToken);
+                    }),
+                    RepeatUntilCancelled(async () =>
                     {
                         var message =
-                            await connection.ReceiveMessageAsync<ChatProtocolMessage>(ChatProtocol.PingTimeout);
+                            await connection.ReceiveMessageAsync<ChatProtocolMessage>(null,stoppingToken);
                         if (!message.HasMessage)
                             throw new NotImplementedException();
                         uiInputOutput.Output($"{message.Login ?? "<Admin>"}: {message.Message}");
-                    }
-                    catch (OperationCanceledException)
-                    {
-                    }
-                }
-            });
+                    }));
+            }
+            catch (ConnectivityException connectivityException)
+            {
+                uiInputOutput.Output(
+                    $"You are disconnected from chat because of connectivity issue: {connectivityException.Message}.");
+                localCts.Cancel();
+            }
+            
+            uiInputOutput.Output("You can close chat now");
+
+            Task RepeatUntilCancelled(Func<Task> actionToRepeat)
+            {
+                return Task.Run(async () =>
+                {
+                    while (!stoppingToken.IsCancellationRequested)
+                        await actionToRepeat();
+                }, stoppingToken);
+            }
         }
     }
 }

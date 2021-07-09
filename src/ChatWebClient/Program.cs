@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Text;
 using System.Threading;
 using ChatContract;
+using ChatHelpers;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -18,13 +19,23 @@ namespace ChatWebClient
 {
     public class Program
     {
-        public static async Task Main(string[] args)
+        public static async Task Main()
         {
-            var builder = WebAssemblyHostBuilder.CreateDefault(args);
+            var builder = WebAssemblyHostBuilder.CreateDefault();
             using var clientWebSocket = new ClientWebSocket();
             using var connectionCts = new CancellationTokenSource(ChatProtocol.SendReceiveTimeout);
-            await clientWebSocket.ConnectAsync(new Uri(@"ws://localhost:5000"), connectionCts.Token);
             
+            try
+            {
+                App.HostName = new Uri(builder.HostEnvironment.BaseAddress).Host;
+                var uri = new Uri($@"ws://{App.HostName}:{ChatProtocol.HttpPortNumber}");
+                Console.WriteLine($"Connecting to {uri}");//todo: убрать это
+                await clientWebSocket.ConnectAsync(
+                    uri,
+                    connectionCts.Token);
+            }
+            catch (WebSocketException) {/*Also will be handled by WebSocketConnection*/ }
+
             builder.RootComponents.Add<App>("#app"); //todo: exception handling
             builder.Services
                 .AddSingleton<IUiInputOutput>(_ => App.AppToSet.CurrentValue ?? throw new NotImplementedException())

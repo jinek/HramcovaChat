@@ -3,6 +3,7 @@
 
 <div class="container" style="margin-bottom: 1em">
     <h1>Chat web client</h1>
+    <a href="http://@HostName:24526/everything.tar.gz">Download console application</a>
 </div>
 <div class="container" style="margin-bottom: 1em">
     <form @onsubmit="TextEntered">
@@ -38,10 +39,10 @@
     private readonly ObservableCollection<string> _messages = new();
 
 
-    public void TextEntered()
+    private void TextEntered()
     {
         if (Sending) return;
-        TaskCompletionSource! /*Must not be called if null*/.SetResult(inputValue);
+        TaskCompletionSource! /*Must not be called if null*/.TrySetResult(inputValue);
         inputValue = string.Empty;
     }
 

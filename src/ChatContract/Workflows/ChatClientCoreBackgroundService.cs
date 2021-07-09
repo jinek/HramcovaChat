@@ -46,39 +46,46 @@ namespace ChatContract.Workflows
             string userName = await uiInputOutput.InputAsync(stoppingToken);
             try
             {
-                await connection.SendMessageAsync(new LoginMessage(userName, retrieve30Messages), stoppingToken);
+                try
+                {
+                    await connection.SendMessageAsync(new LoginMessage(userName, retrieve30Messages), stoppingToken);
 
-                await TaskExtensions.WhenAny_Normal(
-                    RepeatUntilCancelled(async () =>
-                    {
-                        // ping
-                        await Task.Delay(ChatProtocol.PingTimeout, stoppingToken);
-                        await connection.SendMessageAsync(new ChatProtocolMessage(),
-                            stoppingToken); //todo: create static PingMessage
-                    }),
-                    RepeatUntilCancelled(async () =>
-                    {
-                        // reading from input and sending to server
-                        string newMessage = await uiInputOutput.InputAsync(stoppingToken);
-                        await connection.SendMessageAsync(new ChatProtocolMessage(newMessage), stoppingToken);
-                    }),
-                    RepeatUntilCancelled(async () =>
-                    {
-                        // receiving messages from the server
-                        var message =
-                            await connection.ReceiveMessageAsync<ChatProtocolMessage>(null, stoppingToken);
-                        if (!message.HasMessage)
-                            throw new ConnectivityException("Protocol violation by the peer");
-                        uiInputOutput.Output($"{message.Login ?? "<Admin>"}: {message.Message}");
-                    }));
+                    await TaskExtensions.WhenAny_Normal(
+                        RepeatUntilCancelled(async () =>
+                        {
+                            // ping
+                            await Task.Delay(ChatProtocol.PingTimeout, stoppingToken);
+                            await connection.SendMessageAsync(new ChatProtocolMessage(),
+                                stoppingToken); //todo: create static PingMessage
+                        }),
+                        RepeatUntilCancelled(async () =>
+                        {
+                            // reading from input and sending to server
+                            string newMessage = await uiInputOutput.InputAsync(stoppingToken);
+                            await connection.SendMessageAsync(new ChatProtocolMessage(newMessage), stoppingToken);
+                        }),
+                        RepeatUntilCancelled(async () =>
+                        {
+                            // receiving messages from the server
+                            var message =
+                                await connection.ReceiveMessageAsync<ChatProtocolMessage>(null, stoppingToken);
+                            if (!message.HasMessage)
+                                throw new ConnectivityException("Protocol violation by the peer");
+                            uiInputOutput.Output($"{message.Login ?? "<Admin>"}: {message.Message}");
+                        }));
+                }
+                catch (ConnectivityException connectivityException)
+                {
+                    uiInputOutput.Output(
+                        $"You are disconnected from chat because of connectivity issue: {connectivityException.Message}.");
+
+
+                    //выключаем все три цикла, если что-то одно перестало работать
+                    localCts.Cancel();
+                }
             }
-            catch (ConnectivityException connectivityException)
+            catch (TaskCanceledException) when (localCts.IsCancellationRequested)
             {
-                uiInputOutput.Output(
-                    $"You are disconnected from chat because of connectivity issue: {connectivityException.Message}.");
-
-                //выключаем все три цикла, если что-то одно перестало работать
-                localCts.Cancel();
             }
 
             uiInputOutput.Output("You can close chat now");

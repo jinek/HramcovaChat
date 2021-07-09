@@ -15,7 +15,6 @@ namespace ChatHelpers
 
             try
             {
-                // creating one more thread to release current
                 return await Task.Run(async () =>
                 {
                     string? readLine;
@@ -26,6 +25,7 @@ namespace ChatHelpers
                         if (readLine != null)
                             break;
 
+                        // Такое случается, когда не подключена консоль, например
                         Output("No input attached. Waiting one more minute.");
 
                         await Task.Delay(60000, cancellationToken);

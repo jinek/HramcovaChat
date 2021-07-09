@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using ChatContract;
+using ChatContract.Workflows;
 using ChatHelpers;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -27,7 +28,7 @@ namespace ChatWebClient
 
         private bool Sending;
 
-        public async Task<string> InputAsync(CancellationToken cancellationToken)
+        async Task<string> IUiInputOutput.InputAsync(CancellationToken cancellationToken)
         {
             using IDisposable _ = await _inputLock.LockAsync(cancellationToken);
 
@@ -37,7 +38,7 @@ namespace ChatWebClient
                 await using CancellationTokenRegistration cancellationTokenRegistration = cancellationToken.Register(
                     () =>
                     {
-                        Output("You can close the window.");
+                        ((IUiInputOutput) this).Output("You can close the window.");
                         TaskCompletionSource.TrySetCanceled();
                     });
                 return await TaskCompletionSource.Task;
@@ -48,7 +49,7 @@ namespace ChatWebClient
             }
         }
 
-        public void Output(string text)
+        void IUiInputOutput.Output(string text)
         {
             InvokeAsync(() =>
             {
@@ -58,13 +59,15 @@ namespace ChatWebClient
         }
 
         internal static readonly ThreadStaticParameter<App> AppToSet = new();
-        public static string HostName;
+        // ReSharper disable once CA2211 для скорости сделал, не имеет значения сейчас
+        public static string HostName="127.0.0.1";
 
         protected override async Task OnInitializedAsync()
         {
             using IDisposable _ = AppToSet.StartParameterRegion(this);
+
             RunChatWorkflow().FastFailOnException();
-            //todo: если не залогинились вовремя (видимо пофиг)
+
             await base.OnInitializedAsync();
 
             async Task RunChatWorkflow()
@@ -72,6 +75,7 @@ namespace ChatWebClient
                 await _serviceProvider.GetRequiredService<ChatClientCoreBackgroundService>()
                     .ExecuteInternalAsync(CancellationToken.None);
 
+                // Disabling the UI
                 await InvokeAsync(() =>
                 {
                     Sending = true;

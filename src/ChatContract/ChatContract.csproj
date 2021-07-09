@@ -14,4 +14,10 @@
       <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Update="Workflows\ChatServerCore.partial.cs">
+        <DependentUpon>ChatServerCore.cs</DependentUpon>
+      </Compile>
+    </ItemGroup>
+
 </Project>

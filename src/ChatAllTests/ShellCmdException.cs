@@ -2,7 +2,7 @@
 
 namespace ChatIntegrationTests
 {
-    public class ShellCmdException : ApplicationException
+    internal class ShellCmdException : ApplicationException
     {
         public readonly int ExitCode;
 

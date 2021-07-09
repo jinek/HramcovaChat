@@ -1,5 +1,6 @@
 ﻿using System;
 using ChatContract;
+using ChatContract.Workflows;
 
 namespace ChatIntegrationTests
 {
@@ -27,8 +28,8 @@ namespace ChatIntegrationTests
             }
             catch (ShellCmdException)
             {
-
             }
+
             new ShellCmdCommand("pwsh", @".\dockercomposedown.ps1").WaitForExit();
         }
     }

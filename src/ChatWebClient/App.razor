@@ -33,8 +33,6 @@
 
 
 @code {
-    //todo: сделать блок ошибки, а это всё показывать условно
-    //todo: делать enter по enter, фокус по дефолту в окно
     private string inputValue = string.Empty;
     private readonly ObservableCollection<string> _messages = new();
 
@@ -45,6 +43,4 @@
         TaskCompletionSource! /*Must not be called if null*/.TrySetResult(inputValue);
         inputValue = string.Empty;
     }
-
-    //todo: https://docs.microsoft.com/en-us/visualstudio/containers/container-launch-settings?view=vs-2019
 }

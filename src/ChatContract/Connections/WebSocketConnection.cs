@@ -3,9 +3,9 @@ using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ChatContract
+namespace ChatContract.Connections
 {
-    public sealed class WebSocketConnection : SerializingConnection, IDisposable
+    public sealed class WebSocketConnection : ConnectionBase, IDisposable
     {
         private readonly WebSocket _webSocket;
 
@@ -24,7 +24,8 @@ namespace ChatContract
             }
             catch (InvalidOperationException invalidOperationException)
             {
-                throw new ConnectivityException("Can not connect. Possible reason: " + invalidOperationException.Message);
+                throw new ConnectivityException(
+                    "Can not connect. Possible reason: " + invalidOperationException.Message);
             }
             //blazor.webassembly.js:1 System.InvalidOperationException: The WebSocket is not connected.
             catch (WebSocketException webSocketException)
@@ -35,14 +36,14 @@ namespace ChatContract
 
         protected override async Task<int> ReceiveBytesAsync(byte[] buffer, CancellationToken cancellationToken)
         {
-            var memory = new Memory<byte>(buffer,0,buffer.Length);
+            var memory = new Memory<byte>(buffer, 0, buffer.Length);
             try
             {
                 ValueWebSocketReceiveResult receiveResult = await _webSocket.ReceiveAsync(memory, cancellationToken);
 
                 if (!receiveResult.EndOfMessage || receiveResult.MessageType == WebSocketMessageType.Close)
                     throw new ConnectivityException("Chat protocol violation");
-                
+
                 if (receiveResult.MessageType == WebSocketMessageType.Close)
                     throw new ConnectivityException("Connection is closed by peer");
 
@@ -50,7 +51,8 @@ namespace ChatContract
             }
             catch (InvalidOperationException invalidOperationException)
             {
-                throw new ConnectivityException("Can not connect. Possible reason: " + invalidOperationException.Message);
+                throw new ConnectivityException(
+                    "Can not connect. Possible reason: " + invalidOperationException.Message);
             }
             catch (WebSocketException webSocketException)
             {

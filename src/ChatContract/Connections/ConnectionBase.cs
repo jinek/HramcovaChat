@@ -3,11 +3,12 @@ using System.IO;
 using System.Runtime.Serialization.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using ChatContract.Messages;
 using ChatHelpers;
 
-namespace ChatContract
+namespace ChatContract.Connections
 {
-    public abstract class SerializingConnection : IConnection
+    public abstract class ConnectionBase : IConnection
     {
         private readonly AsyncLock _readLock = new();
         private readonly AsyncLock _writeLock = new();
@@ -24,7 +25,7 @@ namespace ChatContract
             using CancellationTokenSource cancellationTokenSourceFinal =
                 CancellationTokenSource.CreateLinkedTokenSource(cancellationToken,
                     cancellationTokenSource?.Token ?? CancellationToken.None);
-            
+
             int length;
             // ReSharper disable once MethodSupportsCancellation this timeout is only ping-pong speed
             using (await _readLock.LockAsync())
@@ -51,8 +52,10 @@ namespace ChatContract
             dataContractJsonSerializer.WriteObject(memoryStream, message);
             using (await _writeLock.LockAsync(cancellationToken))
             {
-                await SendBytesAsync(_sendBuffer, (int) memoryStream.Position, cancellationToken); //todo: all must be checked math
+                await SendBytesAsync(_sendBuffer, (int) memoryStream.Position,
+                    cancellationToken);
             }
+            //todo: all assemblies must be checked math operations
         }
 
         protected abstract Task SendBytesAsync(byte[] bytes, int length, CancellationToken cancellationToken);

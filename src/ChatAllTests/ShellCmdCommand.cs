@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace ChatIntegrationTests
 {
-    public class ShellCmdCommand : IDisposable
+    internal class ShellCmdCommand : IDisposable
     {
         private readonly Process _process;
         private string _errorOutput = string.Empty;

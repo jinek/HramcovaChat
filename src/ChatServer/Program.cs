@@ -4,6 +4,9 @@ using System.Net;
 using System.Net.Sockets;
 using System.Net.WebSockets;
 using ChatContract;
+using ChatContract.Connections;
+using ChatContract.Messages;
+using ChatContract.Workflows;
 using ChatHelpers;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
@@ -18,16 +21,17 @@ namespace ChatServer
 {
     internal static class Program
     {
-        public static void Main()
+        private static void Main()
         {
-            //todo: check exceptions
+            Exceptions.HandleUnobservedExceptions();
+
             new HostBuilder()
                 .UseConsoleLifetime()
                 .ConfigureLogging(builder => builder
                     .AddDebug()
                     .SetMinimumLevel(LogLevel.Trace))
                 .ConfigureServices(collection => collection
-                    .AddSingleton<IUiInputOutput,ConsoleInputOutput>()
+                    .AddSingleton<IUiInputOutput, ConsoleInputOutput>()
                     .AddSingleton<ChatServerCore>()
                     .AddScoped<IConnection>(_ =>
                     {
@@ -37,14 +41,16 @@ namespace ChatServer
                         if (currentWebSocket != null)
                         {
                             if (currentTcpClient != null)
-                                throw new NotImplementedException();
+                                throw new InvalidOperationException(
+                                    "Для одного потока скоуп должен быть либо установлен из обработки " +
+                                    "WebServer, либо из TcpListener. Оба не может быть.");
                             return new WebSocketConnection(currentWebSocket!);
                         }
 
                         if (currentTcpClient != null)
                             return new TcpSocketConnection(currentTcpClient);
 
-                        throw new NotImplementedException();
+                        throw new InvalidOperationException("Должен быть один из скоупов.");
                     })
                     .AddHostedService<TcpListenerHostedService>())
                 .ConfigureWebHost(builder => builder

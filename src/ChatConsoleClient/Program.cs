@@ -2,6 +2,9 @@
 using System.Linq;
 using System.Net.Sockets;
 using ChatContract;
+using ChatContract.Connections;
+using ChatContract.Messages;
+using ChatContract.Workflows;
 using ChatHelpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -13,20 +16,22 @@ namespace ChatConsoleClient
     {
         private static void Main(string[] args)
         {
-            string address = "127.0.0.1";
+            Exceptions.HandleUnobservedExceptions();
+            
+            string address;
 
             new HostBuilder()
                 .UseConsoleLifetime()
-                .ConfigureLogging(builder => builder.AddDebug().SetMinimumLevel(LogLevel.Trace)) //todo: это копипаст
+                .ConfigureLogging(builder => builder.AddDebug().SetMinimumLevel(LogLevel.Trace))
                 .ConfigureServices(collection => collection
                     .AddSingleton<IUiInputOutput, ConsoleInputOutput>()
-                    .AddSingleton<IConnection>(ConnectionFactory)
+                    .AddSingleton(CreateConnection)
                     .AddSingleton<ChatClientCoreBackgroundService>()
                     .AddHostedService<ChatClientCoreBackgroundService>())
                 .Build()
                 .Run();
-            
-            IConnection ConnectionFactory(IServiceProvider serviceProvider)
+
+            IConnection CreateConnection(IServiceProvider serviceProvider)
             {
                 var uiInputOutput = serviceProvider.GetRequiredService<IUiInputOutput>();
                 try
@@ -36,7 +41,7 @@ namespace ChatConsoleClient
                         address = args[0];
                         if (string.IsNullOrEmpty(address))
                         {
-                            OutputAndExit($"Can not connect to server: {address}");
+                            OutputAndExit($"Can not connect to invalid server address {address}");
                         }
                     }
                     else

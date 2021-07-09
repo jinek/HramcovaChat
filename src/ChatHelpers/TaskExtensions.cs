@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace ChatHelpers
 {
@@ -10,7 +11,7 @@ namespace ChatHelpers
     {
         public static async void FastFailOnException(this Task task)
         {
-            //using this because not to wait the finilizing of the task
+            //using this because not to wait the finalizing of the task
             try
             {
                 await task;
@@ -22,6 +23,10 @@ namespace ChatHelpers
             }
         }
 
+        /// <summary>
+        /// Это тоже самое, что WhenAny, но не прячет исключения
+        /// <see cref="Task.WhenAny"/>
+        /// </summary>
         public static Task WhenAny_Normal(params Task[] tasks)
         {
             var taskCompletionSource = new TaskCompletionSource();
@@ -45,20 +50,8 @@ namespace ChatHelpers
                     taskCompletionSource.TrySetResult();
                 });
             }
-            
+
             return taskCompletionSource.Task;
         }
-    }
-
-    public static class TaskLinqExtensions
-    {
-        public static async Task ForeachAsync<T>(this IEnumerable<T> enumerable, Func<T,Task> action)
-        {
-            foreach (T value in enumerable)
-            {
-                await action(value);
-            }
-        }
-
     }
 }

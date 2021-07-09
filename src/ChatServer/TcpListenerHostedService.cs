@@ -3,12 +3,17 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using ChatContract;
+using ChatContract.Messages;
+using ChatContract.Workflows;
 using ChatHelpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace ChatServer
 {
+    /// <summary>
+    /// Слушает TCP клиентов и запускает для них workflow чата <see cref="ChatServerCore.ProcessServerWorkflow"/>
+    /// </summary>
     internal class TcpListenerHostedService : BackgroundService
     {
         public static readonly ThreadStaticParameter<TcpClient?> TcpClientToUse = new();
@@ -37,9 +42,10 @@ namespace ChatServer
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                TcpClient tcpClient = await _tcpListener.AcceptTcpClientAsync(); //todo: which error if stopped
+                TcpClient tcpClient = await _tcpListener.AcceptTcpClientAsync();
                 using IDisposable _ = TcpClientToUse.StartParameterRegion(tcpClient)!;
                 _chatServerCore.ProcessServerWorkflow().FastFailOnException(); //todo: dispose
+                //todo: здесь некрасиво выглядет диспоуз _, так как потом async опирация выполняется
             }
         }
     }

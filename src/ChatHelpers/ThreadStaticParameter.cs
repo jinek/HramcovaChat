@@ -3,6 +3,9 @@ using System.Threading;
 
 namespace ChatHelpers
 {
+    /// <summary>
+    /// Аналогия <see cref="ThreadStaticParameter{T}"/> но сохраняет сообщение для дочерних потоков/тасков
+    /// </summary>
     public sealed class ThreadStaticParameter<T>
     {
         //todo: add unit tests
@@ -40,7 +43,8 @@ namespace ChatHelpers
 
             ~Region()
             {
-                throw new InvalidOperationException("This thread static parameter has not been explicitly disposed");//todo: can happen on application close
+                throw new InvalidOperationException(
+                    "This thread static parameter has not been explicitly disposed"); //todo: can happen on application close
             }
         }
     }

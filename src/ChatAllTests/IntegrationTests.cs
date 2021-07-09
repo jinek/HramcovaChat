@@ -6,14 +6,15 @@ using Xunit;
 
 namespace ChatIntegrationTests
 {
+    /// <summary>
+    /// Показана лишь идея интеграционных/комбинированных тестов
+    /// Для тестов запускается docker-compose
+    /// </summary>
     public class IntegrationTests : DockerComposeTestsBase
     {
-        [Fact]
-        public void CheckWebClientFake()
-        {//silenium
-            new WebClient().DownloadString("http://localhost:24525");
-        }
-
+        /// <summary>
+        /// Атачимся к консоли сервера и проверяем как работают команды
+        /// </summary>
         [Fact]
         public void ServerLsCommandReturn()
         {
@@ -29,6 +30,9 @@ namespace ChatIntegrationTests
             }
         }
 
+        /// <summary>
+        /// Запускаем консольных и веб клиентов, пишем сообщения и проверяем workflow
+        /// </summary>
         [Fact]
         public void ComplexWorkflowTest()
         {
@@ -45,7 +49,7 @@ namespace ChatIntegrationTests
                 while (!shellCmdCommand.ReadLine().Contains(messageId) && i < 11) i++;
                 Assert.True(i < 10, "Message must be echoed within 10 messages");
             }
-            
+
             using (var shellCmdCommand = new ShellCmdCommand("dotnet", @"ChatConsoleClient.dll ""127.0.0.1"""))
             {
                 const string testUser1 = "TestUser2";
@@ -54,6 +58,16 @@ namespace ChatIntegrationTests
                 while (!shellCmdCommand.ReadLine().Contains(messageId) && i < 51) i++;
                 Assert.True(i < 50, "30 Messages must be echoed on login");
             }
+        }
+
+        /// <summary>
+        /// UI e2e тесты работающие поверх того же docker-compose
+        /// </summary>
+        [Fact]
+        public void CheckWebClientFake()
+        {
+            //silenium
+            new WebClient().DownloadString("http://localhost:24525");
         }
     }
 }

@@ -5,9 +5,9 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ChatContract
+namespace ChatContract.Connections
 {
-    public sealed class TcpSocketConnection : SerializingConnection, IDisposable
+    public sealed class TcpSocketConnection : ConnectionBase, IDisposable
     {
         private const int IntSize = sizeof(int);
         private readonly TcpClient _tcpClient;
@@ -15,8 +15,8 @@ namespace ChatContract
 
         public TcpSocketConnection(TcpClient tcpClient)
         {
-            _tcpClient = tcpClient; //todo: dispose
-            _stream = _tcpClient.GetStream();//todo: IO
+            _tcpClient = tcpClient;
+            _stream = _tcpClient.GetStream(); //todo: IOException
         }
 
         protected override async Task SendBytesAsync(byte[] bytes, int length, CancellationToken cancellationToken)
@@ -25,7 +25,7 @@ namespace ChatContract
             try
             {
                 await _stream.WriteAsync(BitConverter.GetBytes(length), cancellationToken);
-                await _stream.WriteAsync(bytes, 0, length, cancellationToken); //todo: что за подсказка
+                await _stream.WriteAsync(bytes, 0, length, cancellationToken);
             }
             catch (IOException ioException)
             {
@@ -38,7 +38,8 @@ namespace ChatContract
             try
             {
                 if (await _stream.ReadAsync(buffer, 0, IntSize, cancellationToken) != IntSize)
-                    throw new ConnectivityException($"Protocol violation: not enough bytes returned. Must be {IntSize}");
+                    throw new ConnectivityException(
+                        $"Protocol violation: not enough bytes returned. Must be {IntSize}");
 
                 int messageLength = BitConverter.ToInt32(buffer);
                 int bytesRead = await _stream.ReadAsync(buffer, 0, messageLength, cancellationToken);
@@ -48,7 +49,7 @@ namespace ChatContract
             }
             catch (IOException ioException)
             {
-                throw new ConnectivityException(ioException);//todo: copypaste
+                throw new ConnectivityException(ioException); //todo: copypaste
             }
         }
 

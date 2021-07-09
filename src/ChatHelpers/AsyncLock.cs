@@ -7,7 +7,8 @@ namespace ChatHelpers
 {
     // idea from Microsoft.EntityFrameworkCore.Internal.AsyncLock
     public sealed class AsyncLock
-    {//todo: tests
+    {
+        //todo: tests
         private readonly SemaphoreSlim _semaphore = new(1);
         private readonly Releaser _releaser;
         private readonly Task<IDisposable> _releaserTaskCached;

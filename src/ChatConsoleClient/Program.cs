@@ -18,7 +18,7 @@ namespace ChatConsoleClient
         {
             Exceptions.HandleUnobservedExceptions();
             
-            string address;
+            string address=null;
 
             new HostBuilder()
                 .UseConsoleLifetime()
@@ -48,8 +48,11 @@ namespace ChatConsoleClient
                     {
 #if DEBUG
                         address = "127.0.0.1";
-#endif
+#else 
                         OutputAndExit("Please, provide server name as first argument");
+                        throw new InvalidOperationException("Must not happen");
+#endif
+                        
                     }
 
                     uiInputOutput.Output($"Connecting to {address}");

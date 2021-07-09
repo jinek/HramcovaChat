@@ -50,9 +50,14 @@ namespace ChatContract.Connections
 
             var memoryStream = new MemoryStream(_sendBuffer);
             dataContractJsonSerializer.WriteObject(memoryStream, message);
+            int length = (int) memoryStream.Position;
+
+            if (length >= ChatProtocol.BufferSize)
+                throw new ConnectivityException("For simplicity chat supports only small messages. Aborting.");
+            
             using (await _writeLock.LockAsync(cancellationToken))
             {
-                await SendBytesAsync(_sendBuffer, (int) memoryStream.Position,
+                await SendBytesAsync(_sendBuffer, length,
                     cancellationToken);
             }
             //todo: all assemblies must be checked math operations
